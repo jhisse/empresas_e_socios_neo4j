@@ -4,6 +4,9 @@ O script faz o download dos arquivos disponibilizados pela [receita federal](htt
 
 A receita não disponibiliza os CPFs dos sócios, portanto a relação foi feita pelo nome. Isto implica a possibilidade de duas ou mais pessoas com o mesmo nome possuir o mesmo nó.
 
+Executar script
+> go run empresas.go
+
 ## Importar no Neo4j
 
 > $ neo4j-admin import --nodes empresas.csv --nodes pessoas.csv --relationships relacoes.csv --ignore-duplicate-nodes=true --database=empresas
