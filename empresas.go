@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -38,10 +37,6 @@ func leLinhas(f *os.File) {
 	for scanner.Scan() {
 		identificarTipo(scanner)
 	}
-}
-
-func gravaNoEmpresa(linha string) {
-	fmt.Println(linha)
 }
 
 func lerDadosEmpresa(s string) {
