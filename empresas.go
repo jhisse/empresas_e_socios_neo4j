@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -32,24 +31,24 @@ func verificarErro(e error) {
 	}
 }
 
-func leLinhas(f *os.File) {
+func leLinhas(f *os.File, sigla string) {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		identificarTipo(scanner)
+		identificarTipo(scanner, sigla)
 	}
 }
 
-func lerDadosEmpresa(s string) {
+func lerDadosEmpresa(s, sigla string) {
 
 	cnpj := strings.TrimSpace(s[2:16])
 	nome := strings.TrimSpace(s[16:166])
 	label := "Pessoa Jurídica"
 
-	nosEmpresas = append(nosEmpresas, []string{cnpj, nome, label})
+	nosEmpresas = append(nosEmpresas, []string{cnpj, nome, label, sigla})
 
 }
 
-func lerDadosPessoas(s string) {
+func lerDadosPessoas(s, sigla string) {
 
 	cnpj := strings.TrimSpace(s[2:16])
 	identificador := strings.TrimSpace(s[16:17])
@@ -58,27 +57,27 @@ func lerDadosPessoas(s string) {
 	nome := strings.TrimSpace(s[33:183])
 	if identificador == "1" {
 		label := "Pessoa Jurídica"
-		nosEmpresas = append(nosEmpresas, []string{cpfCnpj, nome, label})
+		nosEmpresas = append(nosEmpresas, []string{cpfCnpj, nome, label, sigla})
 		relacoes = append(relacoes, []string{cpfCnpj, cnpj, qualificacao})
 	} else if identificador == "2" {
 		label := "Pessoa Física"
 		nosPessoas = append(nosPessoas, []string{nome, label})
 		relacoes = append(relacoes, []string{nome, cnpj, qualificacao})
 	} else {
-		label := "Pessoa Física (Extrangeira)"
+		label := "Nome Exterior"
 		nosPessoas = append(nosPessoas, []string{nome, label})
 		relacoes = append(relacoes, []string{nome, cnpj, qualificacao})
 	}
 }
 
-func identificarTipo(s *bufio.Scanner) {
+func identificarTipo(s *bufio.Scanner, sigla string) {
 	linha := s.Text()
 	tipo, err := strconv.Atoi(linha[0:2])
 	verificarErro(err)
 	if tipo == 1 {
-		lerDadosEmpresa(linha)
+		lerDadosEmpresa(linha, sigla)
 	} else {
-		lerDadosPessoas(linha)
+		lerDadosPessoas(linha, sigla)
 	}
 }
 
@@ -96,7 +95,7 @@ func gravarCSVs() {
 	defer relacoesF.Close()
 
 	we := csv.NewWriter(empresasF)
-	we.Write([]string{"CNPJ:ID", "Nome", ":LABEL"})
+	we.Write([]string{"CNPJ:ID", "Nome", ":LABEL", "UF"})
 	we.WriteAll(nosEmpresas)
 	verificarErro(we.Error())
 
@@ -124,13 +123,10 @@ func baixaArquivos() {
 
 func leArquivos() {
 
-	files, err := ioutil.ReadDir(folderName)
-	verificarErro(err)
-
-	for _, file := range files {
-		f, err := os.Open(folderName + "/" + file.Name())
+	for _, sigla := range estados {
+		f, err := os.Open(folderName + "/" + sigla + ".txt")
 		verificarErro(err)
-		leLinhas(f)
+		leLinhas(f, sigla)
 		defer f.Close()
 	}
 }
